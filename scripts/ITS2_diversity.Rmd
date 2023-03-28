@@ -1,0 +1,41 @@
+---
+title: "ITS2_diversity"
+author: "Bailie Wynbelt"
+date: "2023-03-28"
+output: html_document
+---
+#install tidyverse
+```{r install packages}
+library(tidyverse)
+```
+
+#load in ITS2 data
+```{r read.csv}
+reads_WTU_ITS2 <- read_csv("../data/updated_ITS2_reads_WeeTU.csv")
+```
+###Removing Panicum mili and hirt###
+
+#Remove any rows that have a WTU species value of 122(mili) and 121(hirt)
+```{r}
+panicum_species <- reads_WTU_ITS2 %>% 
+  select(Genus, Species, WTU.species) %>%
+  filter(Genus == "Panicum") %>% 
+  distinct()
+
+pani_mili_count <- panicum_species %>% 
+  filter(Species == "Panicum miliaceum")
+
+pani_hirt_count <- panicum_species %>% 
+  filter(Species == "Panicum hirticaule")
+
+no_millet_ITS2 <- reads_WTU_ITS2 %>% 
+  filter(WTU.species != "122",
+         WTU.species != "121")
+
+```
+
+#Remove data frames that are not needed
+```{r}
+rm(pani_hirt_count, pani_mili_count, panicum_species)
+```
+
