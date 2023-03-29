@@ -1,0 +1,89 @@
+---
+title: "ITS2_diversity"
+author: "Bailie Wynbelt"
+date: "2023-03-28"
+output: html_document
+---
+
+#install tidyverse
+
+```{r install packages}
+library(tidyverse)
+```
+
+#load in ITS2 data
+
+```{r read.csv}
+reads_WTU_trnL <- read_csv("../data/updated_trnL_reads_WeeTU.csv")
+```
+
+###Remove reads###
+```{r}
+under_10_reads_trnL <- reads_WTU_trnL %>% 
+  filter(Reads >= 10)
+
+under_25_reads_trnL <- reads_WTU_trnL %>% 
+  filter(Reads >= 25)
+
+under_50_reads_trnL <- reads_WTU_trnL %>% 
+  filter(Reads >= 50)
+```
+
+###Diet Diversity###
+
+#Find the sum of total reads
+```{r}
+under_10_reads_trnL$sum_reads<- sum(under_10_reads_trnL$Reads)
+
+under_25_reads_trnL$sum_reads<- sum(under_25_reads_trnL$Reads)
+
+under_50_reads_trnL$sum_reads<- sum(under_50_reads_trnL$Reads)
+```
+
+#Find the proportion of species 
+```{r}
+under_10_reads_trnL <- under_10_reads_trnL %>% 
+  group_by(SampleID) %>% 
+  mutate(pI = (Reads/sum_reads))
+
+under_25_reads_trnL <- under_25_reads_trnL %>% 
+  group_by(SampleID) %>% 
+  mutate(pI = (Reads/sum_reads))
+
+under_50_reads_trnL <- under_50_reads_trnL %>% 
+  group_by(SampleID) %>% 
+  mutate(pI = (Reads/sum_reads))
+```
+
+#Calculate the diversity index
+```{r}
+under_10_reads_trnL <- under_10_reads_trnL %>% 
+  mutate(diversity_index = -sum(pI*log(pI))) 
+
+under_25_reads_trnL <- under_25_reads_trnL %>% 
+  mutate(diversity_index = -sum(pI*log(pI)))
+
+under_50_reads_trnL <- under_50_reads_trnL %>% 
+  mutate(diversity_index = -sum(pI*log(pI)))
+
+```
+
+#group by species
+```{r}
+diversity_under_10 <- under_10_reads_trnL %>% 
+  select(SampleID, sum_reads, pI, diversity_index) %>% 
+  distinct(SampleID, .keep_all = TRUE)
+
+diversity_under_25 <- under_25_reads_trnL %>% 
+  select(SampleID, sum_reads, pI, diversity_index) %>% 
+  distinct(SampleID, .keep_all = TRUE)
+
+diversity_under_50 <- under_50_reads_trnL %>% 
+  select(SampleID, sum_reads, pI, diversity_index) %>% 
+  distinct(SampleID, .keep_all = TRUE)
+```
+
+#Look at differences in cut-offs
+```{r}
+
+```
