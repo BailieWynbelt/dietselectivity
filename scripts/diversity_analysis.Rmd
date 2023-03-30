@@ -15,17 +15,124 @@ library(reshape2)
 
 #Read_csv
 ```{r}
-diversity_species_trnL <- read_csv("outputs/diversity_by_species_trnL_long.csv")
+diversity_species_trnL <- read_csv("../outputs/diversity_by_species_trnL_long.csv")
 
-diversity_genus_trnL <- read_csv("outputs/diversity_by_genus_trnL_long.csv")
+diversity_genus_trnL <- read_csv("../outputs/diversity_by_genus_trnL_long.csv")
 
-diversity_species_ITS2 <- read_csv("outputs/diversity_by_species_ITS2_long.csv")
+diversity_species_ITS2 <- read_csv("../outputs/diversity_by_species_ITS2_long.csv")
 
-diversity_genus_ITS2<- read_csv("outputs/diversity_by_genus_ITS2_long.csv")
+diversity_genus_ITS2<- read_csv("../outputs/diversity_by_genus_ITS2_long.csv")
 ```
 
+###ANOVA###
+##species - trnl##
+
+#Look at differences in cut-offs
+```{r}
+sum_diversity_species_trnL <- diversity_species_trnL %>% 
+  group_by(cutoff) %>% 
+  summarise(mean_diversity = mean(diversity_index, na.rm = TRUE),
+            sd_diversity = sd(diversity_index, na.rm = TRUE))
+
+```
+
+#Look at ggplot
+```{r}
+ggplot(data = diversity_species_trnL, aes(x = diversity_index, color = cutoff, fill = cutoff)) +
+  geom_histogram(alpha = 0.5)
+
+```
+
+#Run stats - is there a statistical differenece
+```{r}
+#what is the best to run??
+diversity_anova_species_trnL <- aov(diversity_index ~ cutoff, data = diversity_species_trnL)
+summary(diversity_anova_species_trnL)
+TukeyHSD(diversity_anova_species_trnL)
+```
+
+##genus - trnl##
+
+#Look at differences in cut-offs
+```{r}
+sum_diversity_genus_trnL <- diversity_genus_trnL %>% 
+  group_by(cutoff) %>% 
+  summarise(mean_diversity = mean(diversity_index, na.rm = TRUE),
+            sd_diversity = sd(diversity_index, na.rm = TRUE))
+
+```
+
+#Look at ggplot
+```{r}
+ggplot(data = diversity_genus_trnL, aes(x = diversity_index, color = cutoff, fill = cutoff)) +
+  geom_histogram(alpha = 0.5)
+
+```
+
+#Run stats - is there a statistical differenece
+```{r}
+#what is the best to run??
+diversity_anova_genus_trnL <- aov(diversity_index ~ cutoff, data = diversity_genus_trnL)
+summary(diversity_anova_genus_trnL)
+TukeyHSD(diversity_anova_genus_trnL)
+```
+
+##species - ITS2##
+
+#Look at differences in cut-offs
+```{r}
+sum_diversity_species_ITS2 <- diversity_species_ITS2 %>% 
+  group_by(cutoff) %>% 
+  summarise(mean_diversity = mean(diversity_index, na.rm = TRUE),
+            sd_diversity = sd(diversity_index, na.rm = TRUE))
+
+```
+
+#Look at ggplot
+```{r}
+ggplot(data = diversity_species_ITS2, aes(x = diversity_index, color = cutoff, fill = cutoff)) +
+  geom_histogram(alpha = 0.5)
+
+```
+
+#Run stats - is there a statistical differenece
+```{r}
+#what is the best to run??
+diversity_anova_species_ITS2 <- aov(diversity_index ~ cutoff, data = diversity_species_ITS2)
+summary(diversity_anova_species_ITS2)
+TukeyHSD(diversity_anova_species_ITS2)
+```
+
+##genus - ITS2##
+
+#Look at differences in cut-offs
+```{r}
+sum_diversity_genus_ITS2 <- diversity_genus_ITS2 %>% 
+  group_by(cutoff) %>% 
+  summarise(mean_diversity = mean(diversity_index, na.rm = TRUE),
+            sd_diversity = sd(diversity_index, na.rm = TRUE))
+
+```
+
+#Look at ggplot
+```{r}
+ggplot(data = diversity_genus_ITS2, aes(x = diversity_index, color = cutoff, fill = cutoff)) +
+  geom_histogram(alpha = 0.5)
+
+```
+
+#Run stats - is there a statistical differenece
+```{r}
+#what is the best to run??
+diversity_anova_genus_ITS2 <- aov(diversity_index ~ cutoff, data = diversity_genus_ITS2)
+summary(diversity_anova_genus_ITS2)
+TukeyHSD(diversity_anova_genus_ITS2)
+```
+
+###work in progress###
 #mutate columns
 ```{r}
+#help
 diversity_genus_ITS2 <- diversity_genus_ITS2 %>% 
   mutate(type = "genus")
 
@@ -44,7 +151,7 @@ diversity_species_trnL <- diversity_species_trnL %>%
 
 #join ITS2
 ```{r}
-
+# help
 diversity_ITS2 <- diversity_species_ITS2 %>% 
   left_join(diversity_genus_ITS2, by = "SampleID") %>% 
 
