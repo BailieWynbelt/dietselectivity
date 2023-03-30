@@ -8,10 +8,7 @@ output: html_document
 #install tidyverse
 
 ```{r install packages}
-install.packages("vegan")
 library(tidyverse)
-library(vegan)
-
 ```
 
 #load in ITS2 data
@@ -63,28 +60,32 @@ under_50_reads_ITS2 <- no_millet_ITS2 %>%
 
 #Find the sum of total reads
 ```{r}
-under_10_reads_ITS2 <- as.data.frame(under_10_reads_ITS2)
+under_10_reads_ITS2 <- under_10_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(sum_reads_ID = sum(Reads))
 
-under_10_reads_ITS2$sum_reads<- sum(under_10_reads_ITS2$Reads)
+under_25_reads_ITS2 <- under_25_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(sum_reads_ID = sum(Reads))
 
-under_25_reads_ITS2$sum_reads<- sum(under_25_reads_ITS2$Reads)
-
-under_50_reads_ITS2$sum_reads<- sum(under_50_reads_ITS2$Reads)
+under_50_reads_ITS2 <- under_50_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(sum_reads_ID = sum(Reads))
 ```
 
 #Find the proportion of species 
 ```{r}
 under_10_reads_ITS2 <- under_10_reads_ITS2 %>% 
   group_by(SampleID) %>% 
-  mutate(pI = (Reads/sum_reads))
+  mutate(pI = (Reads/sum_reads_ID))
 
 under_25_reads_ITS2 <- under_25_reads_ITS2 %>% 
   group_by(SampleID) %>% 
-  mutate(pI = (Reads/sum_reads))
+  mutate(pI = (Reads/sum_reads_ID))
 
 under_50_reads_ITS2 <- under_50_reads_ITS2 %>% 
   group_by(SampleID) %>% 
-  mutate(pI = (Reads/sum_reads))
+  mutate(pI = (Reads/sum_reads_ID))
 ```
 
 #Calculate the diversity index
@@ -103,19 +104,54 @@ under_50_reads_ITS2 <- under_50_reads_ITS2 %>%
 #group by species
 ```{r}
 diversity_under_10 <- under_10_reads_ITS2 %>% 
-  select(SampleID, sum_reads, pI, diversity_index) %>% 
+  select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
   distinct(SampleID, .keep_all = TRUE)
 
 diversity_under_25 <- under_25_reads_ITS2 %>% 
-  select(SampleID, sum_reads, pI, diversity_index) %>% 
+  select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
   distinct(SampleID, .keep_all = TRUE)
 
 diversity_under_50 <- under_50_reads_ITS2 %>% 
-  select(SampleID, sum_reads, pI, diversity_index) %>% 
+  select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
   distinct(SampleID, .keep_all = TRUE)
 ```
 
+#Join cutoff data frames
+```{r}
+joined_diversity <- diversity_under_10 %>% 
+  left_join(diversity_under_25, by = "SampleID") %>% 
+  rename(diversity_index_10 = diversity_index.x,
+         diversity_index_25 = diversity_index.y) %>% 
+  select(-c(sum_reads_ID.x, pI.x, sum_reads_ID.y, pI.y))
+
+joined_diversity <- joined_diversity %>% 
+  left_join(diversity_under_50, by = "SampleID") %>% 
+  rename(diversity_index_50 = diversity_index) %>% 
+  select(-c(pI, sum_reads_ID))
+
+```
+
+#Join cutoff data frames 2.0
+```{r}
+#help im stuck
+```
+#Look at ggplot
+```{r}
+ggplot(data = joined_diversity, aes(x = diversity_index, colors = cutoff)) +
+  geom_histogram()
+```
+
 #Look at differences in cut-offs
+```{r}
+#why isnt this working. help.
+sum_diversity <- joined_diversity %>% 
+  summarise(sum_diversity_10 = mean(diversity_index_10),
+            sum_diversity_25 = mean(diversity_index_25, na.rm = TRUE),
+            sum_diversity_50 = mean(diversity_index_50, na.rm = TRUE))
+
+```
+
+#Run stats - is there a statistical differenece
 ```{r}
 
 ```
