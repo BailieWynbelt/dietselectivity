@@ -1,0 +1,66 @@
+---
+title: "diversity_analysis"
+author: "Bailie Wynbelt"
+date: "2023-03-30"
+output: github document
+---
+load packages
+```{r}
+library(tidyverse)
+install.packages("reshape2") 
+install.packages("reshape")
+library(reshape)
+library(reshape2)
+```
+
+#Read_csv
+```{r}
+diversity_species_trnL <- read_csv("outputs/diversity_by_species_trnL_long.csv")
+
+diversity_genus_trnL <- read_csv("outputs/diversity_by_genus_trnL_long.csv")
+
+diversity_species_ITS2 <- read_csv("outputs/diversity_by_species_ITS2_long.csv")
+
+diversity_genus_ITS2<- read_csv("outputs/diversity_by_genus_ITS2_long.csv")
+```
+
+#mutate columns
+```{r}
+diversity_genus_ITS2 <- diversity_genus_ITS2 %>% 
+  mutate(type = "genus")
+
+diversity_species_ITS2 <- diversity_species_ITS2 %>% 
+  mutate(type = "species")
+
+diversity_genus_trnL <- diversity_genus_trnL %>% 
+  mutate(type = "genus",
+         primer = "trnL")
+
+diversity_species_trnL <- diversity_species_trnL %>% 
+  mutate(type = "species",
+         primer = "trnL")
+
+```
+
+#join ITS2
+```{r}
+
+diversity_ITS2 <- diversity_species_ITS2 %>% 
+  left_join(diversity_genus_ITS2, by = "SampleID") %>% 
+
+
+diversity_ITS2_2 <- melt(diversity_ITS2,
+                       id.vars = c("SampleID", "primer.y"),
+                       variable.name = "type",
+                       value.name = "diversity_index")
+```
+
+#join trnL
+```{r}
+
+```
+
+#join ITS2 and trnL together
+```{r}
+
+```
