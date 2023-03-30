@@ -110,18 +110,15 @@ under_50_reads_ITS2 <- under_50_reads_ITS2 %>%
 ```{r}
 diversity_under_10 <- under_10_reads_ITS2 %>% 
   select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
-  distinct(SampleID, .keep_all = TRUE) %>% 
-  mutate(cutoff = "10")
+  distinct(SampleID, .keep_all = TRUE) 
 
 diversity_under_25 <- under_25_reads_ITS2 %>% 
   select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
-  distinct(SampleID, .keep_all = TRUE) %>% 
-  mutate(cutoff = "25")
+  distinct(SampleID, .keep_all = TRUE) 
 
 diversity_under_50 <- under_50_reads_ITS2 %>% 
   select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
-  distinct(SampleID, .keep_all = TRUE) %>% 
-  mutate(cutoff = "25")
+  distinct(SampleID, .keep_all = TRUE)
 ```
 
 ### Create synthesized csv's ###
@@ -130,13 +127,13 @@ diversity_under_50 <- under_50_reads_ITS2 %>%
 ```{r}
 joined_diversity <- diversity_under_10 %>% 
   left_join(diversity_under_25, by = "SampleID") %>% 
-  rename(diversity_index_10 = diversity_index.x,
-         diversity_index_25 = diversity_index.y) %>% 
+  rename("10_reads" = diversity_index.x,
+         "25_reads" = diversity_index.y) %>% 
   select(-c(sum_reads_ID.x, pI.x, sum_reads_ID.y, pI.y))
 
 joined_diversity <- joined_diversity %>% 
   left_join(diversity_under_50, by = "SampleID") %>% 
-  rename(diversity_index_50 = diversity_index) %>% 
+  rename("50_reads" = diversity_index) %>% 
   select(-c(pI, sum_reads_ID))
 
 write_csv(joined_diversity, file = "../outputs/diversity_by_genus_ITS2.csv")
@@ -145,14 +142,21 @@ write_csv(joined_diversity, file = "../outputs/diversity_by_genus_ITS2.csv")
 
 #Join cutoff data frames 2.0
 ```{r}
-#help im stuck
+diversity_long <- melt(joined_diversity,
+                       id.vars = "SampleID",
+                       variable.name = "cutoff",
+                       value.name = "diversity_index")
+
+write_csv(diversity_long, 
+          file = "../outputs/diversity_by_genus_ITS2_long.csv")
 ```
 
 ### Visualize/understand ###
 
 #Read_csv
 ```{r}
-diversity <- read_csv("../outputs/diversity_by_genus_ITS2.csv")
+diversity <- read_csv("../outputs/diversity_by_species_trnL.csv")
+diversity_long <- read_csv("../outputs/diversity_by_species_trnL_long.csv")
 ```
 
 #Look at differences in cut-offs

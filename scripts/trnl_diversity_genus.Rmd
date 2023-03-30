@@ -99,13 +99,13 @@ diversity_under_50 <- under_50_reads_trnL %>%
 ```{r}
 joined_diversity <- diversity_under_10 %>% 
   left_join(diversity_under_25, by = "SampleID") %>% 
-  rename(diversity_index_10 = diversity_index.x,
-         diversity_index_25 = diversity_index.y) %>% 
+  rename("10_reads" = diversity_index.x,
+         "25_reads" = diversity_index.y) %>% 
   select(-c(sum_reads_ID.x, pI.x, sum_reads_ID.y, pI.y))
 
 joined_diversity <- joined_diversity %>% 
   left_join(diversity_under_50, by = "SampleID") %>% 
-  rename(diversity_index_50 = diversity_index) %>% 
+  rename("50_reads" = diversity_index) %>% 
   select(-c(pI, sum_reads_ID))
 
 write_csv(joined_diversity, file = "../outputs/diversity_by_genus_trnL.csv")
@@ -114,7 +114,13 @@ write_csv(joined_diversity, file = "../outputs/diversity_by_genus_trnL.csv")
 
 #Join cutoff data frames 2.0
 ```{r}
-#help im stuck
+diversity_long <- melt(joined_diversity,
+                       id.vars = "SampleID",
+                       variable.name = "cutoff",
+                       value.name = "diversity_index")
+
+write_csv(diversity_long, 
+          file = "../outputs/diversity_by_genus_trnL_long.csv")
 ```
 
 ### Visualize/understand ###
@@ -122,29 +128,28 @@ write_csv(joined_diversity, file = "../outputs/diversity_by_genus_trnL.csv")
 #Read_csv
 ```{r}
 diversity <- read_csv("../outputs/diversity_by_genus_trnL.csv")
+diversity_long <- read_csv("../outputs/diversity_by_genus_trnL_long.csv")
 ```
-
 #Look at differences in cut-offs
 ```{r}
-sum_diversity_genus_trnL <- diversity %>% 
-  summarise(mean_diversity_10 = mean(diversity_index_10),
-            mean_diversity_25 = mean(diversity_index_25, na.rm = TRUE),
-            mean_diversity_50 = mean(diversity_index_50, na.rm = TRUE),
-            sd_diversity_10 = sd(diversity_index_10),
-            sd_diversity_25 = sd(diversity_index_25, na.rm = TRUE),
-            sd_diversity_50 = sd(diversity_index_50, na.rm = TRUE))
+sum_diversity_genus_trnL <- diversity_long %>% 
+  group_by(cutoff) %>% 
+  summarise(mean_diversity = mean(diversity_index, na.rm = TRUE),
+            sd_diversity = sd(diversity_index, na.rm = TRUE))
 
 ```
 
 #Look at ggplot
 ```{r}
-ggplot(data = joined_diversity, aes(x = diversity_index, colors = cutoff)) +
-  geom_histogram()
+ggplot(data = diversity_long, aes(x = diversity_index, color = cutoff, fill = cutoff)) +
+  geom_histogram(alpha = 0.5)
+
 ```
 
 #Run stats - is there a statistical differenece
 ```{r}
 #what is the best to run??
-diversity_anova <- aov(diversity_index ~ cutoff, data = diversity)
-summary(signal_anova)
+diversity_anova <- aov(diversity_index ~ cutoff, data = diversity_long)
+summary(diversity_anova)
+TukeyHSD(diversity_anova)
 ```
