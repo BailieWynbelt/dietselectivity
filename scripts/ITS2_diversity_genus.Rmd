@@ -8,6 +8,10 @@ output: github document
 #install tidyverse
 ```{r install packages}
 library(tidyverse)
+install.packages("reshape2") 
+install.packages("reshape")
+library(reshape)
+library(reshape2)
 ```
 
 #load in ITS2 data
