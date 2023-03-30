@@ -1,31 +1,35 @@
 ---
-title: "trnL_diversity"
+title: "trnL_diversity_genus"
 author: "Bailie Wynbelt"
-date: "2023-03-28"
-output: html_document
+date: "2023-03-29"
+output: github_document
 ---
 
 #install tidyverse
-
 ```{r install packages}
 library(tidyverse)
 ```
 
 #load in ITS2 data
-
 ```{r read.csv}
 reads_WTU_trnL <- read_csv("../data/updated_trnL_reads_WeeTU.csv")
+```
+###Group by Genus###
+```{r}
+genus_group_trnL <- reads_WTU_trnL %>% 
+  group_by(SampleID, Genus) %>% 
+  summarise(Reads = sum(Reads))
 ```
 
 ###Remove reads###
 ```{r}
-under_10_reads_trnL <- reads_WTU_trnL %>% 
+under_10_reads_trnL <- genus_group_trnL %>% 
   filter(Reads >= 10)
 
-under_25_reads_trnL <- reads_WTU_trnL %>% 
+under_25_reads_trnL <- genus_group_trnL %>% 
   filter(Reads >= 25)
 
-under_50_reads_trnL <- reads_WTU_trnL %>% 
+under_50_reads_trnL <- genus_group_trnL %>% 
   filter(Reads >= 50)
 ```
 
@@ -104,7 +108,7 @@ joined_diversity <- joined_diversity %>%
   rename(diversity_index_50 = diversity_index) %>% 
   select(-c(pI, sum_reads_ID))
 
-write_csv(joined_diversity, file = "../outputs/diversity_trnL")
+write_csv(joined_diversity, file = "../outputs/diversity_by_genus_trnL")
 
 ```
 
