@@ -1,0 +1,165 @@
+---
+title: "ITS2_diversity_genus"
+author: "Bailie Wynbelt"
+date: "2023/29/03"
+output: github document
+---
+
+#install tidyverse
+```{r install packages}
+library(tidyverse)
+```
+
+#load in ITS2 data
+```{r read.csv}
+reads_WTU_ITS2 <- read_csv("../data/updated_ITS2_reads_WeeTU.csv")
+```
+
+###Removing Panicum mili and hirt###
+
+#Remove any rows that have a WTU species value of 122(mili) and 121(hirt)
+
+```{r}
+panicum_species <- reads_WTU_ITS2 %>% 
+  select(Genus, Species, WTU.species) %>%
+  filter(Genus == "Panicum") %>% 
+  distinct()
+
+pani_mili_count <- panicum_species %>% 
+  filter(Species == "Panicum miliaceum")
+
+pani_hirt_count <- panicum_species %>% 
+  filter(Species == "Panicum hirticaule")
+
+no_millet_ITS2 <- reads_WTU_ITS2 %>% 
+  filter(WTU.species != "122",
+         WTU.species != "121")
+
+```
+
+#Remove data frames that are not needed
+```{r}
+rm(pani_hirt_count, pani_mili_count, panicum_species)
+```
+
+###Group by Genus###
+```{r}
+genus_group_ITS2 <- no_millet_ITS2 %>% 
+  group_by(SampleID, Genus) %>% 
+  summarise(Reads = sum(Reads))
+```
+
+###Remove reads###
+```{r}
+under_10_reads_ITS2 <- genus_group_ITS2 %>% 
+  filter(Reads >= 10)
+
+under_25_reads_ITS2 <- genus_group_ITS2 %>% 
+  filter(Reads >= 25)
+
+under_50_reads_ITS2 <- genus_group_ITS2 %>% 
+  filter(Reads >= 50)
+```
+
+###Diet Diversity###
+
+#Find the sum of total reads
+```{r}
+under_10_reads_ITS2 <- under_10_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(sum_reads_ID = sum(Reads))
+
+under_25_reads_ITS2 <- under_25_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(sum_reads_ID = sum(Reads))
+
+under_50_reads_ITS2 <- under_50_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(sum_reads_ID = sum(Reads))
+```
+
+#Find the proportion of species 
+```{r}
+under_10_reads_ITS2 <- under_10_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(pI = (Reads/sum_reads_ID))
+
+under_25_reads_ITS2 <- under_25_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(pI = (Reads/sum_reads_ID))
+
+under_50_reads_ITS2 <- under_50_reads_ITS2 %>% 
+  group_by(SampleID) %>% 
+  mutate(pI = (Reads/sum_reads_ID))
+```
+
+#Calculate the diversity index
+```{r}
+under_10_reads_ITS2 <- under_10_reads_ITS2 %>% 
+  mutate(diversity_index = -sum(pI*log(pI))) 
+
+under_25_reads_ITS2 <- under_25_reads_ITS2 %>% 
+  mutate(diversity_index = -sum(pI*log(pI)))
+
+under_50_reads_ITS2 <- under_50_reads_ITS2 %>% 
+  mutate(diversity_index = -sum(pI*log(pI)))
+
+```
+
+#group by species
+```{r}
+diversity_under_10 <- under_10_reads_ITS2 %>% 
+  select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
+  distinct(SampleID, .keep_all = TRUE)
+
+diversity_under_25 <- under_25_reads_ITS2 %>% 
+  select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
+  distinct(SampleID, .keep_all = TRUE)
+
+diversity_under_50 <- under_50_reads_ITS2 %>% 
+  select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
+  distinct(SampleID, .keep_all = TRUE)
+```
+
+### Visualize ###
+
+#Join cutoff data frames
+```{r}
+joined_diversity <- diversity_under_10 %>% 
+  left_join(diversity_under_25, by = "SampleID") %>% 
+  rename(diversity_index_10 = diversity_index.x,
+         diversity_index_25 = diversity_index.y) %>% 
+  select(-c(sum_reads_ID.x, pI.x, sum_reads_ID.y, pI.y))
+
+joined_diversity <- joined_diversity %>% 
+  left_join(diversity_under_50, by = "SampleID") %>% 
+  rename(diversity_index_50 = diversity_index) %>% 
+  select(-c(pI, sum_reads_ID))
+
+```
+
+#Join cutoff data frames 2.0
+```{r}
+#help im stuck
+```
+
+#Look at ggplot
+```{r}
+ggplot(data = joined_diversity, aes(x = diversity_index, colors = cutoff)) +
+  geom_histogram()
+```
+
+#Look at differences in cut-offs
+```{r}
+#why isnt this working. help.
+sum_diversity <- joined_diversity %>% 
+  summarise(sum_diversity_10 = mean(diversity_index_10),
+            sum_diversity_25 = mean(diversity_index_25, na.rm = TRUE),
+            sum_diversity_50 = mean(diversity_index_50, na.rm = TRUE))
+
+```
+
+#Run stats - is there a statistical differenece
+```{r}
+
+```
