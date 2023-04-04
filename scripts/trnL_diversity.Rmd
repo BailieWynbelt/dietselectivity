@@ -9,10 +9,6 @@ output: html_document
 
 ```{r install packages}
 library(tidyverse)
-install.packages("reshape2") 
-install.packages("reshape")
-library(reshape)
-library(reshape2)
 ```
 
 #load in ITS2 data
@@ -21,21 +17,45 @@ library(reshape2)
 reads_WTU_trnL <- read_csv("../data/updated_trnL_reads_WeeTU.csv")
 ```
 
+#Remove plant voucher ids
+```{r}
+plants <- read_csv("../data/collection_data/vial_id.csv")
+
+plants <- plants %>% 
+  filter(sample_type == "plant") %>% 
+  rename("SampleID" = vial_id) %>% 
+  select(-sample_id)
+
+no_millet_vouchers_trnL <- plants %>% 
+  left_join(x = reads_WTU_trnL, by = "SampleID")
+
+#count the number of rows with sample_type = plant
+count_plants <- no_millet_vouchers_trnL %>% 
+  filter(sample_type == "plant")
+
+no_millet_vouchers_trnL <- no_millet_vouchers_trnL %>% 
+  filter((sample_type != "plant") %>% 
+  replace_na(TRUE))
+
+#It worked!
+```
+
 ###Remove reads###
 ```{r}
-under_10_reads_trnL <- reads_WTU_trnL %>% 
+under_10_reads_trnL <- no_millet_vouchers_trnL %>% 
   filter(Reads >= 10)
 
-under_25_reads_trnL <- reads_WTU_trnL %>% 
+under_25_reads_trnL <- no_millet_vouchers_trnL %>% 
   filter(Reads >= 25)
 
-under_50_reads_trnL <- reads_WTU_trnL %>% 
+under_50_reads_trnL <- no_millet_vouchers_trnL %>% 
   filter(Reads >= 50)
 ```
 
 find max H value
 ```{r}
 #ln of S, which = number of species in that community
+#number of WTU.species (distinct)
 distinct_species_10 <- under_10_reads_trnL  %>% 
   select(Species) %>%  
   distinct()
@@ -99,7 +119,7 @@ under_50_reads_trnL <- under_50_reads_trnL %>%
 
 ```
 
-#group by species
+#group by sampleid
 ```{r}
 diversity_under_10 <- under_10_reads_trnL %>% 
   select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
@@ -135,6 +155,11 @@ write_csv(joined_diversity, file = "../outputs/diversity_by_species_trnL.csv")
 
 #Join cutoff data frames 2.0
 ```{r}
+install.packages("reshape2") 
+install.packages("reshape")
+library(reshape)
+library(reshape2)
+
 diversity_long <- melt(joined_diversity,
                        id.vars = "SampleID",
                        variable.name = "cutoff",
