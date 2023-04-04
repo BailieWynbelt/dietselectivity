@@ -1,0 +1,46 @@
+---
+title: "cutoffs"
+author: "Bailie Wynbelt"
+date: "04-04-2023"
+output: html_document
+---
+
+##Look to see tails for cutoffs
+```{r}
+library(tidyverse)
+```
+
+#ITS2
+```{r}
+ITS2 <- read_csv("data/updated_ITS2_reads_WeeTu.csv")
+
+ITS2_common_species <- ITS2 %>% 
+  group_by(Species) %>% 
+  summarise(total_reads = sum(Reads)) %>%  
+  filter(total_reads > 51000)
+
+ITS2_common_genus <- ITS2 %>% 
+  group_by(Genus) %>% 
+  summarise(total_reads = sum(Reads)) %>%  
+  filter(total_reads > 69000)
+
+```
+
+
+#trnL
+
+```{r}
+trnL <- read_csv("data/updated_trnL_reads_WeeTu.csv")
+
+trnL_common_species <- trnL %>% 
+  group_by(Species) %>% 
+  summarise(total_reads = sum(Reads)) %>%  
+  filter(total_reads > 38200)
+
+trnL_common_genus <- trnL %>% 
+  group_by(Genus) %>% 
+  summarise(total_reads = sum(Reads)) %>%  
+  filter(total_reads > 40000)
+
+
+```
