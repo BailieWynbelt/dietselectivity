@@ -37,6 +37,7 @@ no_millet_vouchers_trnL <- no_millet_vouchers_trnL %>%
   filter((sample_type != "plant") %>% 
   replace_na(TRUE))
 
+write_csv(no_millet_vouchers_trnL, "../outputs/no_millet_vouchers_trnL.csv")
 #It worked!
 ```
 
