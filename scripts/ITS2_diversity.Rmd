@@ -9,6 +9,8 @@ output: html_document
 
 ```{r install packages}
 library(tidyverse)
+library(reshape)
+library(reshape2)
 ```
 
 #load in ITS2 data
@@ -45,8 +47,33 @@ rm(pani_hirt_count, pani_mili_count, panicum_species)
 ```
 
 ###Remove reads###
+df[column %in% vector,]
+#Remove plant voucher ids
 ```{r}
-under_10_reads_ITS2 <- no_millet_ITS2 %>% 
+plants <- read_csv("../data/collection_data/vial_id.csv")
+
+plants <- plants %>% 
+  filter(sample_type == "plant") %>% 
+  rename(SampleID = vial_id) %>% 
+  select(-sample_id)
+
+no_millet_vouchers_ITS2 <- plants %>% 
+  left_join(x = no_millet_ITS2, by = "SampleID")
+
+#count the number of rows with sample_type = plant
+count_plants <- no_millet_vouchers_ITS2 %>% 
+  filter(sample_type == "plant")
+
+no_millet_vouchers_ITS2 <- no_millet_vouchers_ITS2 %>% 
+  filter((sample_type != "plant") %>% 
+  replace_na(TRUE))
+
+#It worked!
+```
+
+#Cut off certain values 
+```{r}
+under_10_reads_ITS2 <- no_millet_vouchers_ITS2 %>% 
   filter(Reads >= 10)
 
 under_25_reads_ITS2 <- no_millet_ITS2 %>% 
