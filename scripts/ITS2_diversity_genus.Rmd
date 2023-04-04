@@ -59,7 +59,7 @@ no_millet_vouchers_ITS2_genus <- plants %>%
 count_plants <- no_millet_vouchers_ITS2_genus %>% 
   filter(sample_type == "plant")
 
-no_millet_vouchers_ITS2 <- no_millet_vouchers_ITS2_genus %>% 
+no_millet_vouchers_ITS2_genus <- no_millet_vouchers_ITS2_genus %>% 
   filter((sample_type != "plant") %>% 
   replace_na(TRUE))
 
@@ -130,7 +130,7 @@ under_50_reads_ITS2 <- under_50_reads_ITS2 %>%
 
 ```
 
-#group by species
+#group by sampleid
 ```{r}
 diversity_under_10 <- under_10_reads_ITS2 %>% 
   select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
