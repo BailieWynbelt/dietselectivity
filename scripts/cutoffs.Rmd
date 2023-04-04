@@ -1,0 +1,41 @@
+---
+title: "cutoffs"
+author: "Bailie Wynbelt"
+date: "04/04/2023"
+output: github document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+ITS2 <- read_csv("outputs/no_millet_vouchers_ITS2.csv")
+
+trnL <- read_csv("outputs/no_millet_vouchers_trnL.csv")
+```
+
+```{r}
+max <- ITS2 %>% 
+  summarise(max_reads <- max(Reads))
+```
+
+```{r}
+ggplot(data = ITS2, aes(x = Reads)) +
+  geom_histogram() +
+  xlim(0, 16000) +
+  ylim(0, 200)
+```
+
+```{r}
+max <- trnL %>% 
+  summarise(max_reads <- max(Reads))
+```
+
+```{r}
+ggplot(data = trnL, aes(x = Reads)) +
+  geom_histogram() +
+  stat_bin(bins = 30) +
+  xlim(0, 18000) +
+  ylim(0, 200)
+```
