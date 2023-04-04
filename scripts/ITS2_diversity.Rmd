@@ -9,8 +9,6 @@ output: html_document
 
 ```{r install packages}
 library(tidyverse)
-library(reshape)
-library(reshape2)
 ```
 
 #load in ITS2 data
@@ -35,6 +33,7 @@ pani_mili_count <- panicum_species %>%
 pani_hirt_count <- panicum_species %>% 
   filter(Species == "Panicum hirticaule")
 
+#run this
 no_millet_ITS2 <- reads_WTU_ITS2 %>% 
   filter(WTU.species != "122",
          WTU.species != "121")
@@ -47,14 +46,14 @@ rm(pani_hirt_count, pani_mili_count, panicum_species)
 ```
 
 ###Remove reads###
-df[column %in% vector,]
+
 #Remove plant voucher ids
 ```{r}
 plants <- read_csv("../data/collection_data/vial_id.csv")
 
 plants <- plants %>% 
   filter(sample_type == "plant") %>% 
-  rename(SampleID = vial_id) %>% 
+  rename("SampleID" = vial_id) %>% 
   select(-sample_id)
 
 no_millet_vouchers_ITS2 <- plants %>% 
@@ -76,10 +75,10 @@ no_millet_vouchers_ITS2 <- no_millet_vouchers_ITS2 %>%
 under_10_reads_ITS2 <- no_millet_vouchers_ITS2 %>% 
   filter(Reads >= 10)
 
-under_25_reads_ITS2 <- no_millet_ITS2 %>% 
+under_25_reads_ITS2 <- no_millet_vouchers_ITS2 %>% 
   filter(Reads >= 25)
 
-under_50_reads_ITS2 <- no_millet_ITS2 %>% 
+under_50_reads_ITS2 <- no_millet_vouchers_ITS2 %>% 
   filter(Reads >= 50)
 ```
 
@@ -128,7 +127,7 @@ under_50_reads_ITS2 <- under_50_reads_ITS2 %>%
 
 ```
 
-#group by species
+#group by sampleid
 ```{r}
 diversity_under_10 <- under_10_reads_ITS2 %>% 
   select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
@@ -164,6 +163,9 @@ write_csv(joined_diversity, file = "../outputs/diversity_by_species_ITS2.csv")
 
 #Join cutoff data frames 2.0
 ```{r}
+library(reshape)
+library(reshape2)
+
 diversity_long <- melt(joined_diversity,
                        id.vars = "SampleID",
                        variable.name = "cutoff",
