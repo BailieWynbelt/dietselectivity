@@ -14,9 +14,33 @@ library(tidyverse)
 ```{r read.csv}
 reads_WTU_trnL <- read_csv("../data/updated_trnL_reads_WeeTU.csv")
 ```
+
+#Remove plant voucher ids
+```{r}
+plants <- read_csv("../data/collection_data/vial_id.csv")
+
+plants <- plants %>% 
+  filter(sample_type == "plant") %>% 
+  rename("SampleID" = vial_id) %>% 
+  select(-sample_id)
+
+no_millet_vouchers_trnL_genus <- plants %>% 
+  left_join(x = reads_WTU_trnL, by = "SampleID")
+
+#count the number of rows with sample_type = plant
+count_plants <- no_millet_vouchers_trnL_genus %>% 
+  filter(sample_type == "plant")
+
+no_millet_vouchers_trnL_genus <- no_millet_vouchers_trnL_genus %>% 
+  filter((sample_type != "plant") %>% 
+  replace_na(TRUE))
+
+#It worked!
+```
+
 ###Group by Genus###
 ```{r}
-genus_group_trnL <- reads_WTU_trnL %>% 
+genus_group_trnL <- no_millet_vouchers_trnL_genus %>% 
   group_by(SampleID, Genus) %>% 
   summarise(Reads = sum(Reads))
 ```
@@ -78,7 +102,7 @@ under_50_reads_trnL <- under_50_reads_trnL %>%
 
 ```
 
-#group by species
+#group by sampleid
 ```{r}
 diversity_under_10 <- under_10_reads_trnL %>% 
   select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
@@ -114,6 +138,11 @@ write_csv(joined_diversity, file = "../outputs/diversity_by_genus_trnL.csv")
 
 #Join cutoff data frames 2.0
 ```{r}
+install.packages("reshape2") 
+install.packages("reshape")
+library(reshape)
+library(reshape2)
+
 diversity_long <- melt(joined_diversity,
                        id.vars = "SampleID",
                        variable.name = "cutoff",
