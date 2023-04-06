@@ -57,6 +57,28 @@ under_50_reads_trnL <- genus_group_trnL %>%
   filter(Reads >= 50)
 ```
 
+find max H value
+```{r}
+#ln of S, which = number of species in that community
+#number of WTU.species (distinct)
+distinct_genus_10 <- under_10_reads_trnL  %>% 
+  select(Genus) %>%  
+  distinct()
+# = 
+distinct_genus_25 <- under_25_reads_trnL  %>% 
+  select(Genus) %>%  
+  distinct()
+# = 
+distinct_genus_50 <- under_50_reads_trnL  %>% 
+  select(Genus) %>%  
+  distinct()
+# = 
+
+trnl_genus_10_h <- log()
+trnl_genus_25_h <- log()
+trnl_genus_50_h <- log()
+```
+
 ###Diet Diversity###
 
 #Find the sum of total reads

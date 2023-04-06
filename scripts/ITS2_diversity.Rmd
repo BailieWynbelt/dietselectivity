@@ -83,6 +83,28 @@ under_50_reads_ITS2 <- no_millet_vouchers_ITS2 %>%
   filter(Reads >= 50)
 ```
 
+find max H value
+```{r}
+#ln of S, which = number of species in that community
+#number of WTU.species (distinct)
+distinct_species_10 <- under_10_reads_ITS2  %>% 
+  select(Species) %>%  
+  distinct()
+# = 211
+distinct_species_25 <- under_25_reads_ITS2  %>% 
+  select(Species) %>%  
+  distinct()
+# = 155
+distinct_species_50 <- under_50_reads_ITS2  %>% 
+  select(Species) %>%  
+  distinct()
+# = 132
+
+ITS2_species_10_h <- log(211)
+ITS2_species_25_h <- log(155)
+ITS2_species_50_h <- log(132)
+```
+
 ###Diet Diversity###
 
 #Find the sum of total reads
