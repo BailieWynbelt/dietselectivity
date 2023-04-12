@@ -1,0 +1,60 @@
+---
+title: "abundance species"
+author: "Bailie Wynbelt"
+date: "12/04/2023"
+output: github_document
+---
+
+genus - join
+```{r}
+species_trnL <- read_csv("outputs/diversity_by_species_trnL_long.csv")
+species_ITS2 <- read_csv("outputs/diversity_by_species_ITS2_long.csv")
+```
+
+left join
+```{r}
+joined_species <- species_ITS2 %>% 
+  left_join(species_trnL, 
+            by = c('SampleID', 'cutoff'))
+```
+
+rename columns
+```{r}
+joined_species <- joined_species %>% 
+  rename("SI_ITS2" = diversity_index.x,
+         "SI_trnL" = diversity_index.y)
+```
+
+abundance column
+```{r}
+joined_species <- joined_species %>% 
+  mutate(abundance = SI_trnL - SI_ITS2)
+```
+
+summary
+```{r}
+abundance_stats <- joined_species %>% 
+  group_by(cutoff) %>% 
+  summarise(mean = mean(abundance, na.rm = TRUE))
+```
+
+plot
+```{r}
+ggplot(data = joined_species, aes(x = abundance, color = cutoff, fill = cutoff)) +
+  geom_density(alpha = 0.5, position = "identity") +
+  geom_vline(data = abundance_stats,
+             aes(xintercept = mean, color = cutoff)) +
+  theme_bw() +
+  labs(title = "Species") +
+  scale_x_continuous(limits=c(-2,2))
+```
+
+save plot
+```{r}
+ggsave(filename = "abundance_species.jpg", 
+       plot=last_plot(), 
+       path = "output", 
+       width=1600, 
+       height=1000, 
+       units="px")
+```

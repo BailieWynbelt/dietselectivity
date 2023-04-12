@@ -1,0 +1,52 @@
+---
+title: "plotting"
+author: "Bailie Wynbelt"
+date: "12/04/2023"
+output: "github document
+---
+
+```{r}
+library(tidyverse)
+```
+
+genus - join
+```{r}
+genus_trnL <- read_csv("outputs/diversity_by_genus_trnL_long.csv")
+genus_ITS2 <- read_csv("outputs/diversity_by_genus_ITS2_long.csv")
+```
+left join
+```{r}
+joined_genus <- genus_ITS2 %>% 
+  left_join(genus_trnL, 
+            by = c('SampleID', 'cutoff'))
+```
+
+rename columns
+```{r}
+joined_genus <- joined_genus %>% 
+  rename("SI_ITS2" = diversity_index.x,
+         "SI_trnL" = diversity_index.y)
+```
+
+abundance column
+```{r}
+joined_genus <- joined_genus %>% 
+  mutate(abundance = SI_trnL - SI_ITS2)
+```
+
+summary
+```{r}
+abundance_stats <- joined_genus %>% 
+  group_by(cutoff) %>% 
+  summarise(mean = mean(abundance, na.rm = TRUE))
+```
+
+plot
+```{r}
+ggplot(data = joined_genus, aes(x = abundance, color = cutoff, fill = cutoff)) +
+  geom_density(alpha = 0.5, position = "identity") +
+  geom_vline(data = abundance_stats,
+             aes(xintercept = mean, color = cutoff)) +
+  theme_bw() +
+  scale_x_continuous(limits=c(-2,2))
+```
