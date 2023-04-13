@@ -1,0 +1,116 @@
+---
+title: "Distinct Species (trnL) - ANOVA"
+author: "Bailie Wynbelt"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+## Count number of distinct species between each speciesID per cutoff (run anova)
+
+load in ITS2 data
+```{r read.csv}
+reads_WTU_trnL <- read_csv("../data/updated_trnL_reads_WeeTU.csv")
+```
+
+Remove any rows that have a WTU species value of 122(mili) and 121(hirt)
+```{r}
+#Run this
+no_millet_trnL <- reads_WTU_trnL %>% 
+  filter(WTU.species != "122",
+         WTU.species != "121")
+
+```
+
+Remove plant voucher ids - ITS2
+```{r}
+plants <- read_csv("../data/collection_data/vial_id.csv")
+
+plants <- plants %>% 
+  filter(sample_type == "plant") %>% 
+  rename("SampleID" = vial_id) %>% 
+  select(-sample_id)
+
+no_millet_vouchers_trnL <- plants %>% 
+  left_join(x = no_millet_trnL, by = "SampleID")
+
+trnL <- no_millet_vouchers_trnL %>% 
+  filter((sample_type != "plant") %>% 
+  replace_na(TRUE))
+
+#It worked!
+```
+
+Remove unneeded data frames
+```{r}
+rm(no_millet_trnL, no_millet_vouchers_trnL, reads_WTU_trnL)
+```
+
+create cutoffs
+```{r}
+trnL_10 <- trnL  %>% 
+  filter(Reads >= 10)
+
+trnL_25 <- trnL %>% 
+  filter(Reads >= 25)
+
+trnL_50 <- trnL %>% 
+  filter(Reads >= 50)
+```
+
+Count distinct species
+```{r}
+distinct_trnL_10 <- trnL_10  %>% 
+  group_by(SampleID) %>% 
+  summarise(distinct_species = n_distinct(Species))
+  
+distinct_trnL_25 <- trnL_25  %>% 
+  group_by(SampleID) %>% 
+  summarise(distinct_species = n_distinct(Species))
+
+distinct_trnL_50 <- trnL_50  %>% 
+  group_by(SampleID) %>% 
+  summarise(distinct_species = n_distinct(Species))
+```
+
+Join data frames
+```{r}
+joined_trnL <- distinct_trnL_10 %>% 
+  left_join(distinct_trnL_25, by = "SampleID") %>% 
+  rename("10_reads" = distinct_species.x,
+         "25_reads" = distinct_species.y)
+
+joined_trnL <- joined_trnL %>% 
+  left_join(distinct_trnL_50, by = "SampleID") %>% 
+  rename("50_reads" = distinct_species)
+```
+
+load - melt
+```{r}
+library(reshape2)
+```
+
+Change structure
+```{r}
+joined_trnL <- melt(joined_trnL,
+                       id.vars = "SampleID",
+                       variable.name = "cutoff")
+
+joined_trnL <- joined_trnL %>% 
+  rename("count" = value)
+```
+
+Remove unneeded data frames
+```{r}
+rm(distinct_trnL_10, distinct_trnL_25, distinct_trnL_50, trnL_10, trnL_25, trnL_50, trnL)
+```
+
+ANOVA
+```{r}
+anova_trnL <- aov(count ~ cutoff, data = joined_trnL)
+summary(anova_trnL)
+TukeyHSD(anova_trnL)
+```
