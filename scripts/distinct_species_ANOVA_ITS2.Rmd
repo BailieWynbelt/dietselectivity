@@ -1,0 +1,116 @@
+---
+title: "Distinct Species - ANOVA"
+author: "Bailie Wynbelt"
+date: "13-04-2023"
+output: github document
+---
+
+```{r}
+library(tidyverse)
+```
+
+## Count number of distinct species between each speciesID per cutoff (run anova)
+
+load in ITS2 data
+```{r read.csv}
+reads_WTU_ITS2 <- read_csv("../data/updated_ITS2_reads_WeeTU.csv")
+```
+
+Remove any rows that have a WTU species value of 122(mili) and 121(hirt)
+```{r}
+#Run this
+no_millet_ITS2 <- reads_WTU_ITS2 %>% 
+  filter(WTU.species != "122",
+         WTU.species != "121")
+
+```
+
+Remove plant voucher ids - ITS2
+```{r}
+plants <- read_csv("../data/collection_data/vial_id.csv")
+
+plants <- plants %>% 
+  filter(sample_type == "plant") %>% 
+  rename("SampleID" = vial_id) %>% 
+  select(-sample_id)
+
+no_millet_vouchers_ITS2_genus <- plants %>% 
+  left_join(x = no_millet_ITS2, by = "SampleID")
+
+ITS2 <- no_millet_vouchers_ITS2_genus %>% 
+  filter((sample_type != "plant") %>% 
+  replace_na(TRUE))
+
+#It worked!
+```
+
+Remove unneeded data frames
+```{r}
+rm(no_millet_ITS2, no_millet_vouchers_ITS2_genus, reads_WTU_ITS2)
+```
+
+create cutoffs
+```{r}
+ITS2_10 <- ITS2  %>% 
+  filter(Reads >= 10)
+
+ITS2_25 <- ITS2 %>% 
+  filter(Reads >= 25)
+
+ITS2_50 <- ITS2 %>% 
+  filter(Reads >= 50)
+```
+
+Count distinct species
+```{r}
+distinct_ITS2_10 <- ITS2_10  %>% 
+  group_by(SampleID) %>% 
+  summarise(distinct_species = n_distinct(Species))
+  
+distinct_ITS2_25 <- ITS2_25  %>% 
+  group_by(SampleID) %>% 
+  summarise(distinct_species = n_distinct(Species))
+
+distinct_ITS2_50 <- ITS2_50  %>% 
+  group_by(SampleID) %>% 
+  summarise(distinct_species = n_distinct(Species))
+```
+
+Join data frames
+```{r}
+joined_ITS2 <- distinct_ITS2_10 %>% 
+  left_join(distinct_ITS2_25, by = "SampleID") %>% 
+  rename("10_reads" = distinct_species.x,
+         "25_reads" = distinct_species.y)
+
+joined_ITS2 <- joined_ITS2 %>% 
+  left_join(distinct_ITS2_50, by = "SampleID") %>% 
+  rename("50_reads" = distinct_species)
+```
+
+load - melt
+```{r}
+library(reshape2)
+```
+
+Change structure
+```{r}
+joined_ITS2 <- melt(joined_ITS2,
+                       id.vars = "SampleID",
+                       variable.name = "cutoff")
+
+joined_ITS2 <- joined_ITS2 %>% 
+  rename("count" = value)
+```
+
+Remove unneeded data frames
+```{r}
+rm(distinct_ITS2_10, distinct_ITS2_25, distinct_ITS2_50, ITS2_10, ITS2_25, ITS2_50, ITS2)
+```
+
+ANOVA
+```{r}
+anova_ITS2 <- aov(count ~ cutoff, data = joined_ITS2)
+summary(anova_ITS2)
+TukeyHSD(anova_ITS2)
+```
