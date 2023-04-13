@@ -7,8 +7,8 @@ output: github_document
 
 genus - join
 ```{r}
-species_trnL <- read_csv("outputs/diversity_by_species_trnL_long.csv")
-species_ITS2 <- read_csv("outputs/diversity_by_species_ITS2_long.csv")
+species_trnL <- read_csv("../outputs/diversity_by_species_trnL_long.csv")
+species_ITS2 <- read_csv("../outputs/diversity_by_species_ITS2_long.csv")
 ```
 
 left join
@@ -46,14 +46,14 @@ ggplot(data = joined_species, aes(x = abundance, color = cutoff, fill = cutoff))
              aes(xintercept = mean, color = cutoff)) +
   theme_bw() +
   labs(title = "Species") +
-  scale_x_continuous(limits=c(-2,2))
+  scale_x_continuous(limits=c(-3.5,3.5))
 ```
 
 save plot
 ```{r}
 ggsave(filename = "abundance_species.jpg", 
        plot=last_plot(), 
-       path = "output", 
+       path = "outputs", 
        width=1600, 
        height=1000, 
        units="px")

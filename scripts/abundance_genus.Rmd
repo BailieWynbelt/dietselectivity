@@ -11,8 +11,8 @@ library(tidyverse)
 
 genus - join
 ```{r}
-genus_trnL <- read_csv("outputs/diversity_by_genus_trnL_long.csv")
-genus_ITS2 <- read_csv("outputs/diversity_by_genus_ITS2_long.csv")
+genus_trnL <- read_csv("../outputs/diversity_by_genus_trnL_long.csv")
+genus_ITS2 <- read_csv("../outputs/diversity_by_genus_ITS2_long.csv")
 ```
 left join
 ```{r}
@@ -49,14 +49,14 @@ ggplot(data = joined_genus, aes(x = abundance, color = cutoff, fill = cutoff)) +
              aes(xintercept = mean, color = cutoff)) +
   theme_bw() +
   labs(title = "Genus") +
-  scale_x_continuous(limits=c(-2,2))
+  scale_x_continuous(limits=c(-3.5,3.5))
 ```
 
 save plot
 ```{r}
 ggsave(filename = "abundance_genus.jpg", 
        plot=last_plot(), 
-       path = "output", 
+       path = "outputs", 
        width=1600, 
        height=1000, 
        units="px")
