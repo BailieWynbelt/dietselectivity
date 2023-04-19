@@ -117,7 +117,7 @@ sum_diversity_genus_ITS2 <- diversity_genus_ITS2 %>%
 #Look at ggplot
 ```{r}
 ggplot(data = diversity_genus_ITS2, aes(x = diversity_index, color = cutoff, fill = cutoff)) +
-  geom_histogram(alpha = 0.5)
+  geom_histogram(alpha = 0.5, position = "identity")
 
 ```
 

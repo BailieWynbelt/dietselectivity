@@ -1,0 +1,42 @@
+---
+title: "Hill Index"
+author: "Bailie Wynbelt"
+date: "18-04-2023"
+output: github_document
+---
+read packages
+```{r}
+library(tidyverse)
+install.packages('SpadeR')
+library(SpadeR)
+```
+
+read data
+```{r}
+ITS2 <- read_csv("../outputs/no_millet_vouchers_ITS2.csv")
+
+trnL <- read_csv("../outputs/no_millet_vouchers_trnL.csv")
+```
+
+10 cutoff 
+```{r}
+#automatically removes NA's
+under_10_reads_ITS2 <- ITS2 %>% 
+  filter(Reads >= 10) %>% 
+  select(SampleID, Reads, Species)
+
+under_10_reads_trnL <- trnL %>% 
+  filter(Reads >= 10) %>% 
+  select(SampleID, Reads, Species)
+
+```
+
+Hill Index - ITS2
+```{r}
+
+```
+
+Hill Index - trnL
+```{r}
+
+```

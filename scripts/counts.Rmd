@@ -1,0 +1,110 @@
+---
+title: "Number of genus (trnL vs ITS2)"
+author: "Bailie Wynbelt"
+date: "`r Sys.Date()`"
+output: github_document
+---
+Load required packages
+```{r}
+library(tidyverse)
+```
+
+Read in data
+```{r}
+ITS2 <- read_csv("../outputs/no_millet_vouchers_ITS2.csv")
+
+trnL <- read_csv("../outputs/no_millet_vouchers_trnL.csv")
+```
+
+Family, genra, and species counted per ITS2
+```{r}
+#sort high to low
+counts_family_ITS2 <- ITS2 %>% 
+  group_by(Family) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+counts_genus_ITS2 <- ITS2 %>% 
+  group_by(Genus) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+counts_species_ITS2 <- ITS2 %>% 
+  group_by(Species) %>% 
+  count() %>% 
+  arrange(desc(n))
+```
+
+Family, genra, and species counted per trnL
+```{r}
+#sort high to low
+counts_family_trnL <- trnL %>% 
+  group_by(Family) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+counts_genus_trnL <- trnL %>% 
+  group_by(Genus) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+counts_species_trnL <- trnL %>% 
+  group_by(Species) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+```
+
+Combine data frames - What was found in trnL, not found in ITS2
+```{r}
+count_family <- counts_family_trnL %>% 
+  left_join(counts_family_ITS2,
+            by = c('Family'))
+
+count_genus <- counts_genus_trnL %>% 
+  left_join(counts_genus_ITS2,
+            by = c('Genus'))
+
+count_species <- counts_species_trnL %>% 
+  left_join(counts_species_ITS2,
+            by = c('Species'))
+```
+
+Combine data frames - What was found in ITS2, not found in trnL
+```{r}
+count_family_2 <- counts_family_ITS2 %>% 
+  left_join(counts_family_trnL,
+            by = c('Family'))
+
+count_genus_2 <- counts_genus_ITS2 %>% 
+  left_join(counts_genus_trnL,
+            by = c('Genus'))
+
+count_species_2 <- counts_species_ITS2 %>% 
+  left_join(counts_species_trnL,
+            by = c('Species'))
+```
+
+See overlap in species (what doesn't overlap)
+```{r}
+#618 observations originally
+#97 overlap - genus
+overlap_genus <- count_genus %>% 
+  drop_na()
+
+#111 observations originally
+#46 overlap - family
+overlap_family <- count_family %>% 
+  drop_na()
+
+#111 1076 originally
+#46 overlap - family
+overlap_species <- count_species %>% 
+  drop_na()
+  
+```
+
+Graph the number of genra per species
+```{r}
+
+```
