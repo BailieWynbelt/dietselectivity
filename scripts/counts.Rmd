@@ -16,6 +16,16 @@ ITS2 <- read_csv("../outputs/no_millet_vouchers_ITS2.csv")
 trnL <- read_csv("../outputs/no_millet_vouchers_trnL.csv")
 ```
 
+filter reads with a cutoff of 10
+```{r}
+ITS2 <- ITS2 %>% 
+  filter(Reads >= 10)
+
+trnL <- trnL %>% 
+  filter(Reads >= 10)
+
+```
+
 Family, genra, and species counted per ITS2
 ```{r}
 #sort high to low
@@ -92,8 +102,8 @@ See overlap in species (what doesn't overlap)
 overlap_genus <- count_genus %>% 
   drop_na()
 
-#111 observations originally
-#46 overlap - family
+#74 observations originally
+#33 overlap - family
 overlap_family <- count_family %>% 
   drop_na()
 
@@ -106,5 +116,53 @@ overlap_species <- count_species %>%
 
 Graph the number of genra per species
 ```{r}
+#count number of reads
+ITS2 <- ITS2 %>%
+  group_by(SampleID) %>% 
+  summarise(total_reads = sum(Reads))
 
+#count number of reads
+trnL <- trnL %>% 
+  group_by(SampleID) %>% 
+  summarise(total_reads = sum(Reads))
+
+#left join
+joined_data <- ITS2 %>% 
+  left_join(trnL, 
+            by = c("SampleID"))
+#rename 
+joined_data <- joined_data %>% 
+  rename("ITS2" = total_reads.x,
+         "trnL" = total_reads.y)
+
+#create new column
+joined_data <- joined_data %>%
+  group_by(SampleID) %>% 
+  mutate(abundance = (trnL - ITS2))
+
+#melt
+library(reshape2)
+joined_data_2 <- melt(joined_data,
+                      id.vars = "SampleID",
+                      variable.name = "primer",
+                      value.name = "total_reads")
+
+#remove abundance from primer column
+joined_data_2 <- joined_data_2 %>% 
+  filter(primer != "abundance")
+
+#summarise
+abundance_stats <- joined_data_2 %>% 
+  group_by(primer) %>% 
+  summarise(mean_reads = mean(total_reads, na.rm = TRUE))
+
+#graph total reads
+ggplot(data = joined_data_2, aes(x = total_reads, color = primer, fill = primer)) +
+  geom_density(alpha = 0.5, position = "identity") +
+  geom_vline(data = abundance_stats,
+             aes(xintercept = mean_reads, color = primer))
+
+#graph abundance
+  
+  
 ```
