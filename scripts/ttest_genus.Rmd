@@ -1,0 +1,21 @@
+---
+title: "ANOVA - genus"
+author: "Bailie Wynbelt"
+date: "19-04-2023"
+output: github_document
+---
+
+load packages
+```{r}
+
+```
+
+read data
+```{r}
+diversity_genus <- read_csv("../outputs/diversity_genus.csv")
+```
+
+t-test
+```{r}
+t.test(diversity_index ~ primer, data = diversity_genus)
+```

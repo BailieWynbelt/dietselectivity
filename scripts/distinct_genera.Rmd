@@ -1,0 +1,107 @@
+---
+title: "unique_genera"
+author: "Bailie Wynbelt"
+date: "`r Sys.Date()`"
+output: html_document
+---
+Load required packages
+```{r}
+library(tidyverse)
+```
+
+Read in data
+```{r}
+ITS2 <- read_csv("../outputs/no_millet_vouchers_ITS2.csv")
+
+trnL <- read_csv("../outputs/no_millet_vouchers_trnL.csv")
+```
+
+count number of reads
+```{r}
+ITS2 <- ITS2 %>%
+  group_by(SampleID, Genus) %>% 
+  summarise(total_reads = sum(Reads))
+
+trnL <- trnL %>% 
+  group_by(SampleID, Genus) %>% 
+  summarise(total_reads = sum(Reads))
+```
+
+10 read cutoff
+```{r}
+ITS2 <- ITS2 %>% 
+  filter(total_reads >= 10)
+
+trnL <- trnL %>% 
+  filter(total_reads >= 10)
+```
+
+merge
+```{r}
+joined_data <- merge(ITS2, trnL, by = c("SampleID", "Genus"), all=T)
+```
+
+rename
+```{r}
+joined_data <- joined_data %>% 
+  rename("ITS2" = total_reads.x,
+       "trnL" = total_reads.y)
+``` 
+
+replace NA with 0
+```{r}
+#replace NA with 0
+joined_data <- joined_data %>% 
+  mutate_all(~replace(., is.na(.), 0))
+```
+
+create new column
+```{r}
+joined_data <- joined_data %>%
+  group_by(SampleID, Genus) %>% 
+  mutate(abundance = (trnL - ITS2))
+```
+
+find unique number of genera
+```{r}
+genera_trnL <- trnL %>% 
+  group_by(SampleID) %>%
+  summarise(unique_genera = n_distinct(Genus))
+
+genera_ITS2 <- ITS2 %>% 
+  group_by(SampleID) %>%
+  summarise(unique_genera = n_distinct(Genus))
+```
+
+merge
+```{r}
+joined_genera <- merge(genera_ITS2, genera_trnL, by = c("SampleID"), all=T)
+```
+
+rename
+```{r}
+joined_genera <- joined_genera %>% 
+  rename("ITS2" = unique_genera.x,
+         "trnL" = unique_genera.y)
+```
+
+replace NA with 0
+```{r}
+#replace NA with 0
+joined_genera <- joined_genera %>% 
+  mutate_all(~replace(., is.na(.), 0))
+```
+
+melt
+```{r}
+melt_genera <- melt(joined_genera,
+                       id.vars = "SampleID",
+                       variable.name = "primer",
+                       value.name = "count")
+```
+
+graph genera abundance reads (density/scatter)
+```{r}
+ggplot(data = melt_genera, aes(x = count, color = primer, fill = primer)) +
+  geom_density(alpha = 0.5, position = "identity")
+```
