@@ -1,0 +1,85 @@
+---
+title: "Compare distribution of diversity"
+author: "Bailie Wynbelt"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+load required packages
+```{r}
+library(tidyverse)
+```
+
+read in data 
+```{r}
+ITS2 <- read_csv("../outputs/diversity_by_genus_ITS2_long.csv")
+
+trnL <-  read_csv("../outputs/diversity_by_genus_trnL_long.csv")
+```
+
+remove columns
+```{r}
+ITS2 <- ITS2 %>% 
+  filter(cutoff != "25_reads",
+         cutoff != "50_reads") %>% 
+  mutate(primer = if_else(!is.na(cutoff),
+                           true = "ITS2",
+                           false = "ITS2")) %>% 
+  select(-cutoff)
+
+trnL <- trnL %>% 
+  filter(cutoff != "25_reads",
+         cutoff != "50_reads") %>% 
+  mutate(primer = if_else(!is.na(cutoff),
+                           true = "trnL",
+                           false = "trnL")) %>% 
+  select(-cutoff)
+```
+
+Join column
+```{r}
+joined_genus <- ITS2 %>% 
+  left_join(trnL,
+            by = c('SampleID')) %>% 
+  rename("ITS2" = diversity_index.x,
+         "trnL" = diversity_index.y) %>% 
+  select(-primer.x) %>%
+  select(-primer.y)
+  
+```
+
+melt columns together
+```{r}
+library(reshape2)
+diversity_genus <- melt(joined_genus,
+                       id.vars = "SampleID",
+                       variable.name = "primer",
+                       value.name = "diversity_index")
+write_csv(diversity_genus, 
+          file = "../outputs/diversity_genus.csv")
+```
+
+plot
+```{r}
+abundance_stats <- diversity_genus %>% 
+  group_by(primer) %>% 
+  summarise(mean = mean(diversity_index, na.rm = TRUE))
+
+ggplot(data = diversity_genus, aes(x = diversity_index, color = primer, fill = primer)) +
+  geom_density(alpha = 0.5, position = "identity") +
+  geom_vline(data = abundance_stats,
+             aes(xintercept = mean, color = primer)) +
+  theme_bw() +
+  labs(title = "Distribution of Shannon's Diversity Index",
+       x = "Diversity Index",
+       y = "Density") +
+  scale_x_continuous(limits=c(-1,3.5))
+```
+```{r}
+ggsave(filename = "distribution_genus.jpg", 
+       plot=last_plot(), 
+       path = "outputs", 
+       width=1600, 
+       height=1000, 
+       units="px")
+```
