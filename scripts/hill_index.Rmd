@@ -7,8 +7,8 @@ output: github_document
 read packages
 ```{r}
 library(tidyverse)
-install.packages('SpadeR')
-library(SpadeR)
+install.packages('hillR')
+library(hillR)
 ```
 
 read data
@@ -21,22 +21,28 @@ trnL <- read_csv("../outputs/no_millet_vouchers_trnL.csv")
 10 cutoff 
 ```{r}
 #automatically removes NA's
-under_10_reads_ITS2 <- ITS2 %>% 
+ITS2 <- ITS2 %>% 
   filter(Reads >= 10) %>% 
-  select(SampleID, Reads, Species)
+  select(SampleID, Reads, Genus)
 
-under_10_reads_trnL <- trnL %>% 
+trnL <- trnL %>% 
   filter(Reads >= 10) %>% 
-  select(SampleID, Reads, Species)
+  select(SampleID, Reads, Genus)
 
 ```
 
 Hill Index - ITS2
 ```{r}
-
+#calculates taxonomic diversity for each site (alpha diversity)
+#can we consider each sampleID as a unique site, compairson??
+# q = 0 (default hill number - can change to get shannon or simpson)
+hill_taxa(ITS2, q = 0, MARGIN = 1, base = exp(1))
 ```
 
 Hill Index - trnL
 ```{r}
-
+#calculates taxonomic diversity for each site (alpha diversity)
+#can we consider each sampleID as a unique site, compairson??
+# q = 0 (default hill number - can change to get shannon or simpson)
+hill_taxa(trnL, q = 0, MARGIN = 1, base = exp(1))
 ```
