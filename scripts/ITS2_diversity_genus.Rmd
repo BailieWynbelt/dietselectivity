@@ -6,11 +6,13 @@ output: github document
 ---
 
 #install tidyverse
+
 ```{r install packages}
 library(tidyverse)
 ```
 
 #load in ITS2 data
+
 ```{r read.csv}
 reads_WTU_ITS2 <- read_csv("../data/updated_ITS2_reads_WeeTU.csv")
 ```
@@ -39,11 +41,13 @@ no_millet_ITS2 <- reads_WTU_ITS2 %>%
 ```
 
 #Remove data frames that are not needed
+
 ```{r}
 rm(pani_hirt_count, pani_mili_count, panicum_species)
 ```
 
 #Remove plant voucher ids
+
 ```{r}
 plants <- read_csv("../data/collection_data/vial_id.csv")
 
@@ -67,6 +71,7 @@ no_millet_vouchers_ITS2_genus <- no_millet_vouchers_ITS2_genus %>%
 ```
 
 ###Group by Genus###
+
 ```{r}
 genus_group_ITS2 <- no_millet_vouchers_ITS2_genus %>% 
   group_by(SampleID, Genus) %>% 
@@ -74,6 +79,7 @@ genus_group_ITS2 <- no_millet_vouchers_ITS2_genus %>%
 ```
 
 ###Remove reads###
+
 ```{r}
 under_10_reads_ITS2 <- genus_group_ITS2 %>% 
   filter(Reads >= 10)
@@ -86,15 +92,16 @@ under_50_reads_ITS2 <- genus_group_ITS2 %>%
 ```
 
 find max H value
+
 ```{r}
 #ln of S, which = number of species in that community
 #number of WTU.species (distinct)
 distinct_genus_10 <- under_10_reads_ITS2  %>% 
-  select(Genus) %>%  
+  select(Genus)
   distinct()
 # = 
 distinct_genus_25 <- under_25_reads_ITS2  %>% 
-  select(Genus) %>%  
+  select(Genus)
   distinct()
 # = 
 distinct_genus_50 <- under_50_reads_ITS2  %>% 
@@ -110,6 +117,7 @@ ITS2_genus_50_h <- log()
 ###Diet Diversity###
 
 #Find the sum of total reads
+
 ```{r}
 under_10_reads_ITS2 <- under_10_reads_ITS2 %>% 
   group_by(SampleID) %>% 
@@ -124,7 +132,8 @@ under_50_reads_ITS2 <- under_50_reads_ITS2 %>%
   mutate(sum_reads_ID = sum(Reads))
 ```
 
-#Find the proportion of species 
+#Find the proportion of species
+
 ```{r}
 under_10_reads_ITS2 <- under_10_reads_ITS2 %>% 
   group_by(SampleID) %>% 
@@ -140,6 +149,7 @@ under_50_reads_ITS2 <- under_50_reads_ITS2 %>%
 ```
 
 #Calculate the diversity index
+
 ```{r}
 under_10_reads_ITS2 <- under_10_reads_ITS2 %>% 
   mutate(diversity_index = -sum(pI*log(pI))) 
@@ -153,6 +163,7 @@ under_50_reads_ITS2 <- under_50_reads_ITS2 %>%
 ```
 
 #group by sampleid
+
 ```{r}
 diversity_under_10 <- under_10_reads_ITS2 %>% 
   select(SampleID, sum_reads_ID, pI, diversity_index) %>% 
@@ -167,9 +178,10 @@ diversity_under_50 <- under_50_reads_ITS2 %>%
   distinct(SampleID, .keep_all = TRUE)
 ```
 
-### Create synthesized csv's ###
+### Create synthesized csv's
 
 #Join cutoff data frames
+
 ```{r}
 joined_diversity <- diversity_under_10 %>% 
   left_join(diversity_under_25, by = "SampleID") %>% 
@@ -187,6 +199,7 @@ write_csv(joined_diversity, file = "../outputs/diversity_by_genus_ITS2.csv")
 ```
 
 #Join cutoff data frames 2.0
+
 ```{r}
 install.packages("reshape2") 
 install.packages("reshape")
@@ -202,15 +215,17 @@ write_csv(diversity_long,
           file = "../outputs/diversity_by_genus_ITS2_long.csv")
 ```
 
-### Visualize/understand ###
+### Visualize/understand
 
 #Read_csv
+
 ```{r}
 diversity <- read_csv("../outputs/diversity_by_species_trnL.csv")
 diversity_long <- read_csv("../outputs/diversity_by_species_trnL_long.csv")
 ```
 
 #Look at differences in cut-offs
+
 ```{r}
 sum_diversity_genus_ITS2 <- diversity %>% 
   summarise(mean_diversity_10 = mean(diversity_index_10),
@@ -223,12 +238,14 @@ sum_diversity_genus_ITS2 <- diversity %>%
 ```
 
 #Look at ggplot
+
 ```{r}
 ggplot(data = joined_diversity, aes(x = diversity_index, colors = cutoff)) +
   geom_histogram()
 ```
 
 #Run stats - is there a statistical differenece
+
 ```{r}
 #what is the best to run??
 diversity_anova <- aov(diversity_index ~ cutoff, data = diversity)

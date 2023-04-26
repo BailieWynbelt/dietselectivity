@@ -189,6 +189,8 @@ write_csv(joined_diversity, file = "../outputs/diversity_by_species_ITS2.csv")
 library(reshape)
 library(reshape2)
 
+joined_diversity <- read_csv("../outputs/diversity_by_species_ITS2.csv")
+
 diversity_long <- melt(joined_diversity,
                        id.vars = "SampleID",
                        variable.name = "cutoff",
