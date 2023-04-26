@@ -14,6 +14,7 @@ genus - join
 genus_trnL <- read_csv("../outputs/diversity_by_genus_trnL_long.csv")
 genus_ITS2 <- read_csv("../outputs/diversity_by_genus_ITS2_long.csv")
 ```
+
 left join
 ```{r}
 joined_genus <- genus_ITS2 %>% 
