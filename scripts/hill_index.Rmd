@@ -7,8 +7,8 @@ output: github_document
 read packages
 ```{r}
 library(tidyverse)
-install.packages('hillR')
-library(hillR)
+install.packages('SpadeR')
+library(SpadeR)
 ```
 
 read data
@@ -23,11 +23,41 @@ trnL <- read_csv("../outputs/no_millet_vouchers_trnL.csv")
 #automatically removes NA's
 ITS2 <- ITS2 %>% 
   filter(Reads >= 10) %>% 
-  select(SampleID, Reads, Genus)
+  select(SampleID, Genus, Reads)
 
 trnL <- trnL %>% 
   filter(Reads >= 10) %>% 
-  select(SampleID, Reads, Genus)
+  select(SampleID, Genus, Reads)
+
+ITS2 <- ITS2 %>% 
+  group_by(SampleID, Genus) %>% 
+  summarise(Reads = sum(Reads))
+
+trnL <- trnL %>% 
+  group_by(SampleID, Genus) %>% 
+  summarise(Reads = sum(Reads))
+
+```
+
+shift data frame
+```{r}
+ITS2_wide <- ITS2 %>% 
+  pivot_wider(names_from = Genus, values_from = Reads) %>% 
+  column_to_rownames("SampleID")
+    
+ITS2_wide <- ITS2_wide %>% 
+  replace(is.na(.), 0)
+
+ITS2_wide_2 <- as.matrix(ITS2_wide)
+```
+
+Hill Index - Spade
+```{r}
+hill_ITS2 <- Diversity(ITS2_wide_2, datatype = c("abundance"), q = NULL)
+hill_ITS2 <- iNEXT(ITS2_wide_2, datatype = c("abundance"), q = 1)
+```
+
+```{r}
 
 ```
 
