@@ -28,7 +28,7 @@ trnL <- trnL %>%
 
 Family, genra, and species counted per ITS2
 ```{r}
-#sort high to low
+#sort high to low, distinct because it is grouping
 counts_family_ITS2 <- ITS2 %>% 
   group_by(Family) %>% 
   count() %>% 
@@ -65,34 +65,70 @@ counts_species_trnL <- trnL %>%
 
 ```
 
-Combine data frames - What was found in trnL, not found in ITS2
+Unique families 
 ```{r}
-count_family <- counts_family_trnL %>% 
-  left_join(counts_family_ITS2,
-            by = c('Family'))
+# ITS2: merge the two data frames based on plant family names column
+unique_ITS2_families <- merge(counts_family_ITS2, counts_family_trnL, by = "Family", all.x = TRUE)
 
-count_genus <- counts_genus_trnL %>% 
-  left_join(counts_genus_ITS2,
-            by = c('Genus'))
+# ITS2: rename columns
+unique_ITS2_families <- unique_ITS2_families %>% 
+  rename("ITS2" = n.x,
+       "trnL" = n.y) %>% 
+  filter(is.na(trnL))
 
-count_species <- counts_species_trnL %>% 
-  left_join(counts_species_ITS2,
-            by = c('Species'))
+# TRNL: merge the two data frames based on plant family names column
+unique_trnL_families <- merge(counts_family_trnL, counts_family_ITS2, by = "Family", all.x = TRUE)
+
+# TRNL: rename columns
+unique_trnL_families <- unique_trnL_families %>% 
+  rename("trnL" = n.x,
+       "ITS2" = n.y) %>% 
+  filter(is.na(ITS2))
+
 ```
 
-Combine data frames - What was found in ITS2, not found in trnL
+Unique Genera 
 ```{r}
-count_family_2 <- counts_family_ITS2 %>% 
-  left_join(counts_family_trnL,
-            by = c('Family'))
+# ITS2: merge the two data frames based on plant genera names column
+unique_ITS2_genus <- merge(counts_genus_ITS2, counts_genus_trnL, by = "Genus", all.x = TRUE)
 
-count_genus_2 <- counts_genus_ITS2 %>% 
-  left_join(counts_genus_trnL,
-            by = c('Genus'))
+# ITS2: rename columns
+unique_ITS2_genus <- unique_ITS2_genus %>% 
+  rename("ITS2" = n.x,
+       "trnL" = n.y) %>% 
+  filter(is.na(trnL))
 
-count_species_2 <- counts_species_ITS2 %>% 
-  left_join(counts_species_trnL,
-            by = c('Species'))
+# TRNL: merge the two data frames based on plant genera names column
+unique_trnL_genus <- merge(counts_genus_trnL, counts_genus_ITS2, by = "Genus", all.x = TRUE)
+
+# TRNL: rename columns
+unique_trnL_genus <- unique_trnL_genus %>% 
+  rename("trnL" = n.x,
+       "ITS2" = n.y) %>% 
+  filter(is.na(ITS2))
+
+```
+
+Unique Species
+```{r}
+# ITS2: merge the two data frames based on plant species names column
+unique_ITS2_species <- merge(counts_species_ITS2, counts_species_trnL, by = "Species", all.x = TRUE)
+
+# ITS2: rename columns
+unique_ITS2_species <- unique_ITS2_species %>% 
+  rename("ITS2" = n.x,
+       "trnL" = n.y) %>% 
+  filter(is.na(trnL))
+
+# TRNL: merge the two data frames based on plant species names column
+unique_trnL_species <- merge(counts_species_trnL, counts_species_ITS2, by = "Species", all.x = TRUE)
+
+# TRNL: rename columns
+unique_trnL_species <- unique_trnL_species %>% 
+  rename("trnL" = n.x,
+       "ITS2" = n.y) %>% 
+  filter(is.na(ITS2))
+
 ```
 
 See overlap in species (what doesn't overlap)
