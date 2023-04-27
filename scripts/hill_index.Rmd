@@ -7,8 +7,8 @@ output: github_document
 read packages
 ```{r}
 library(tidyverse)
-install.packages('SpadeR')
-library(SpadeR)
+#install.packages("iNEXT")
+library(iNEXT)
 ```
 
 read data
@@ -42,8 +42,9 @@ trnL <- trnL %>%
 shift data frame
 ```{r}
 ITS2_wide <- ITS2 %>% 
-  pivot_wider(names_from = Genus, values_from = Reads) %>% 
-  column_to_rownames("SampleID")
+  filter(!is.na(Genus)) %>% 
+  pivot_wider(names_from = SampleID, values_from = Reads) %>% 
+  column_to_rownames("Genus")
     
 ITS2_wide <- ITS2_wide %>% 
   replace(is.na(.), 0)
@@ -51,14 +52,14 @@ ITS2_wide <- ITS2_wide %>%
 ITS2_wide_2 <- as.matrix(ITS2_wide)
 ```
 
-Hill Index - Spade
+Hill Index - iNext
 ```{r}
-hill_ITS2 <- Diversity(ITS2_wide_2, datatype = c("abundance"), q = NULL)
 hill_ITS2 <- iNEXT(ITS2_wide_2, datatype = c("abundance"), q = 1)
 ```
 
 ```{r}
-
+hill_ITS2$DataInfo
+hill_ITS2$AsyEst
 ```
 
 Hill Index - ITS2
