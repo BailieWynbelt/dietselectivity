@@ -84,16 +84,6 @@ hill_trnL$DataInfo
 hill_trnL_numbers <- hill_trnL$AsyEst
 ```
 
-keep only species richness
-```{r}
-hill_ITS2_numbers <- hill_ITS2_numbers %>% 
-  filter(Diversity == "Species richness")
-```
-
-
-
-
-
 
 Hill Index - ITS2
 ```{r}
