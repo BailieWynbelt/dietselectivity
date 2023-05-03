@@ -50,22 +50,55 @@ ITS2_wide <- ITS2_wide %>%
   replace(is.na(.), 0)
 
 ITS2_wide_2 <- as.matrix(ITS2_wide)
+
+trnL_wide <- trnL %>% 
+  filter(!is.na(Genus)) %>% 
+  pivot_wider(names_from = SampleID, values_from = Reads) %>% 
+  column_to_rownames("Genus")
+    
+trnL_wide <- trnL_wide %>% 
+  replace(is.na(.), 0)
+
+trnL_wide_2 <- as.matrix(trnL_wide)
 ```
 
-Hill Index - iNext
+Hill Index - iNext (ITS2)
 ```{r}
 hill_ITS2 <- iNEXT(ITS2_wide_2, datatype = c("abundance"), q = 1)
 ```
 
+ITS2 Hill Index
 ```{r}
 hill_ITS2$DataInfo
-hill_ITS2$AsyEst
+hill_ITS2_numbers <- hill_ITS2$AsyEst
 ```
+
+Hill Index - iNext (trnl)
+```{r}
+hill_trnL <- iNEXT(trnL_wide_2, datatype = c("abundance"), q = 1)
+```
+
+trnL Hill Index
+```{r}
+hill_trnL$DataInfo
+hill_trnL_numbers <- hill_trnL$AsyEst
+```
+
+keep only species richness
+```{r}
+hill_ITS2_numbers <- hill_ITS2_numbers %>% 
+  filter(Diversity == "Species richness")
+```
+
+
+
+
+
 
 Hill Index - ITS2
 ```{r}
 #calculates taxonomic diversity for each site (alpha diversity)
-#can we consider each sampleID as a unique site, compairson??
+#can we consider each sampleID as a unique site, 
 # q = 0 (default hill number - can change to get shannon or simpson)
 hill_taxa(ITS2, q = 0, MARGIN = 1, base = exp(1))
 ```
