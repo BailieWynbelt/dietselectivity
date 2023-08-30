@@ -26,6 +26,25 @@ trnL <- trnL %>%
 
 ```
 
+count average reads per sampleid
+```{r}
+total_reads_ITS2 <- ITS2 %>% 
+  group_by(SampleID) %>% 
+  summarise(total_read = sum(Reads))
+
+avg_reads_ITS2 <- total_reads_ITS2 %>% 
+  summarise(avg_reads = mean(total_read))
+
+total_reads_trnL <- trnL %>% 
+  group_by(SampleID) %>% 
+  summarise(total_read = sum(Reads))
+
+avg_reads_trnL <- total_reads_trnL %>% 
+  summarise(avg_reads = mean(total_read))
+
+
+```
+
 Family, genra, and species counted per ITS2
 ```{r}
 #sort high to low, distinct because it is grouping
