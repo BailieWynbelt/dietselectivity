@@ -1,0 +1,90 @@
+---
+title: "Comparing RRAs by Primer"
+author: "Ellen Bledsoe"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Comparing RRAs by Primer
+
+## Set Up
+
+```{r}
+library(tidyverse)
+
+# total reads per OTU
+trnL <- read_csv("../outputs/no_millet_vouchers_trnL.csv")
+ITS2 <- read_csv("../outputs/no_millet_vouchers_ITS2.csv")
+
+# total reads per sample
+trnL_totals <- read_csv("../data/sequenced_data/trnL_totals.csv")
+ITS2_totals <- read_csv("../data/sequenced_data/ITS2_totals.csv")
+
+# fecal sample info
+fecal_samples <- read_csv("../data/collection_data/fecal_sample_collection.csv")
+```
+
+TODO: these actully need to be relative read abundance (RRA), not just reads
+
+## For each individual rodent (sample)
+
+What does the relationship in RRAs (trnL vs. ITS2) look like for individual rodents?
+
+First, we need to group the number of reads by plant genus. We want the total number of reads per plant genus for each sample ID.
+```{r}
+# total reads per plant genus per sample ID
+trnL_samples <- trnL %>% 
+  select(SampleID, Reads, Genus) %>% 
+  group_by(SampleID, Genus) %>% 
+  summarise(Reads_trnL = sum(Reads))
+
+ITS2_samples <- ITS2 %>% 
+  select(SampleID, Reads, Genus) %>% 
+  group_by(SampleID, Genus) %>% 
+  summarize(Reads_ITS2 = sum(Reads))
+```
+
+Now we can merge the trnL and ITS2 dataframes together, with one column for trnL reads per genus per sample and another column with ITS2 reads. This is better for plotting than long-form data.
+```{r}
+samples_with_both <- inner_join(trnL_samples, ITS2_samples)
+```
+
+In order to convert to relative read abundance (RRA), we need to divide the number of reads per genus by the total number of total reads in the sample. These totals will vary by primer.
+
+```{r}
+
+```
+
+Worth doing this for fecal samples AND plant samples, but they will be telling us different things :)
+
+TODO: get r-value for each indidivual rodent and for each plant voucher
+TODO: think about fresh vs. trap
+
+Plots
+```{r}
+samples <- distinct(samples_with_both, SampleID)
+test <- samples[1:10,]
+
+for (i in 1:length(test)) {
+  
+  # get SampleID
+  id <- samples_with_both$SampleID[i]
+  
+  # filter data for only Sample ID
+  data <- samples_with_both %>% 
+    filter(SampleID == id)
+  
+  # plot data
+  ggplot(data, aes(Reads_trnL, Reads_ITS2)) +
+    geom_point() +
+    scale_x_log10() +
+    scale_y_log10()
+  
+}
+
+```
+
